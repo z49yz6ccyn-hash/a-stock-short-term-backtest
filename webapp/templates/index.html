@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A股30策略回测控制台</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+:root { --bg:#0a0e1a; --card:#131829; --line:#2a3050; --accent:#4ea1ff; --gold:#ffd93d; --red:#ff6b6b; --green:#6bcb77; --sub:#8892a6; --text:#e0e6f0; }
+body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+.topbar { background:var(--card); border-bottom:1px solid var(--line); padding:12px 24px; display:flex; align-items:center; gap:20px; }
+.topbar h1 { font-size:18px; color:var(--gold); }
+.topbar .status { font-size:12px; color:var(--sub); margin-left:auto; }
+.tabs { display:flex; background:var(--card); border-bottom:1px solid var(--line); padding:0 24px; }
+.tab { padding:12px 20px; cursor:pointer; font-size:14px; color:var(--sub); border-bottom:2px solid transparent; transition:all .2s; }
+.tab:hover { color:var(--text); }
+.tab.active { color:var(--accent); border-bottom-color:var(--accent); }
+.wrap { padding:24px; max-width:1400px; margin:0 auto; }
+.page { display:none; }
+.page.active { display:block; }
+.card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:20px; margin-bottom:16px; }
+.card h2 { font-size:16px; margin-bottom:12px; color:var(--text); }
+.grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:12px; }
+.kpi { background:var(--bg); border:1px solid var(--line); border-radius:8px; padding:14px; text-align:center; }
+.kpi .label { font-size:11px; color:var(--sub); margin-bottom:4px; }
+.kpi .value { font-size:22px; font-weight:bold; }
+.kpi .value.up { color:var(--red); }
+.kpi .value.down { color:var(--green); }
+table { width:100%; border-collapse:collapse; font-size:13px; }
+th,td { padding:8px 10px; text-align:left; border-bottom:1px solid var(--line); }
+th { color:var(--sub); font-weight:500; font-size:12px; }
+tr:hover { background:rgba(78,161,255,.05); }
+.up { color:var(--red); }
+.down { color:var(--green); }
+.ctrl-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:12px; }
+.ctrl-card { background:var(--bg); border:1px solid var(--line); border-radius:8px; padding:14px; }
+.ctrl-card .title { font-size:14px; font-weight:600; margin-bottom:6px; }
+.ctrl-card .desc { font-size:11px; color:var(--sub); margin-bottom:8px; line-height:1.5; }
+.ctrl-card .map { font-size:10px; color:var(--gold); margin-bottom:10px; }
+.btn { background:var(--accent); color:#fff; border:none; padding:8px 16px; border-radius:6px; cursor:pointer; font-size:13px; width:100%; transition:all .2s; }
+.btn:hover { opacity:.9; }
+.btn:disabled { opacity:.5; cursor:not-allowed; }
+.btn-sm { padding:4px 10px; font-size:11px; width:auto; }
+.tasks { margin-top:20px; }
+.task-item { background:var(--bg); border:1px solid var(--line); border-radius:8px; padding:10px 14px; margin-bottom:8px; display:flex; align-items:center; gap:12px; }
+.task-item .name { flex:1; font-size:13px; }
+.task-item .st { font-size:11px; padding:2px 8px; border-radius:4px; }
+.st.running { background:rgba(78,161,255,.15); color:var(--accent); }
+.st.done { background:rgba(107,203,119,.15); color:var(--green); }
+.st.failed { background:rgba(255,107,107,.15); color:var(--red); }
+.logbox { background:#0b0f18; border:1px solid var(--line); border-radius:10px; padding:12px; font-family:Consolas,monospace; font-size:12px; color:#9fb4d0; max-height:420px; overflow:auto; white-space:pre-wrap; margin-top:12px; }
+.logstatus { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:12px 14px; margin-top:12px; }
+.ls-head { display:flex; align-items:center; gap:12px; margin-bottom:8px; }
+.ls-title { font-size:13.5px; font-weight:600; color:var(--accent); flex:1; }
+.ls-time { font-family:Consolas,monospace; font-size:13px; color:var(--sub); }
+.ls-time #ls-elapsed { color:var(--gold); }
+.ls-pct { font-family:Consolas,monospace; font-size:13px; color:var(--accent); font-weight:600; min-width:42px; text-align:right; }
+.ls-bar { height:8px; background:rgba(255,255,255,.06); border-radius:4px; overflow:hidden; }
+.ls-fill { height:100%; width:0%; background:linear-gradient(90deg,var(--accent),var(--gold)); border-radius:4px; transition:width .5s ease; }
+.ls-fill.done { background:linear-gradient(90deg,#2ecc71,#27ae60); }
+.ls-fill.failed { background:linear-gradient(90deg,#e74c3c,#c0392b); }
+.file-item { display:flex; align-items:center; padding:8px 10px; border-bottom:1px solid var(--line); font-size:13px; }
+.file-item .fname { flex:1; }
+.file-item .fsize { color:var(--sub); font-size:11px; margin-right:12px; }
+.file-item .fdir { font-size:10px; color:var(--gold); background:rgba(255,217,61,.1); padding:2px 6px; border-radius:3px; }
+.sp-frame { width:100%; height:calc(100vh - 180px); min-height:600px; border-radius:14px; border:1px solid var(--line); background:#fff; }
+.map-banner { background:rgba(255,217,61,.08); border:1px solid rgba(255,217,61,.2); border-radius:8px; padding:10px 14px; margin-bottom:16px; font-size:12px; color:var(--gold); }
+.toast { position:fixed; top:20px; right:20px; background:var(--card); border:1px solid var(--accent); color:var(--text); padding:12px 20px; border-radius:8px; font-size:13px; z-index:9999; animation:slideIn .3s; }
+@keyframes slideIn { from{transform:translateX(100%);opacity:0} to{transform:translateX(0);opacity:1} }
+@media(max-width:640px){ .wrap{padding:14px} .grid{grid-template-columns:repeat(2,1fr)} .ctrl-grid{grid-template-columns:1fr} .topbar h1{font-size:15px} .tab{padding:10px 12px;font-size:12px} }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <h1>📊 A股30策略回测控制台</h1>
+  <div class="status" id="clock"></div>
+</div>
+<div class="tabs">
+  <div class="tab active" data-page="dashboard">收益看板</div>
+  <div class="tab" data-page="control">后端控制台</div>
+  <div class="tab" data-page="files">文件与产物</div>
+  <div class="tab" data-page="stockpick">优选个股</div>
+</div>
+<div class="wrap">
+
+  <!-- 收益看板 -->
+  <div class="page active" id="page-dashboard">
+    <div class="card">
+      <h2>📈 策略收益概览</h2>
+      <div id="kpi-grid" class="grid"><div style="color:var(--sub);font-size:13px">加载中...</div></div>
+    </div>
+    <div class="card">
+      <h2>🏆 策略收益排名</h2>
+      <div style="overflow-x:auto"><table id="rank-table"><thead><tr><th>排名</th><th>策略</th><th>名称</th><th>总收益</th><th>最大回撤</th><th>胜率</th><th>交易数</th><th>Q1</th><th>Q2</th><th>Q3</th></tr></thead><tbody><tr><td colspan="10" style="text-align:center;color:var(--sub)">暂无数据，请先运行回测</td></tr></tbody></table></div>
+    </div>
+  </div>
+
+  <!-- 后端控制台 -->
+  <div class="page" id="page-control">
+    <div class="map-banner">🔗 <b>控制台按钮 ↔ 前端页面 映射</b>：点击「执行」后，结果出现在按钮标注的页面/位置</div>
+    <div class="ctrl-grid" id="ctrl-grid"></div>
+    <div class="tasks">
+      <h2 style="font-size:16px;margin-bottom:12px">任务运行状态 <span style="font-size:11px;color:var(--sub);font-weight:400">(自动刷新)</span></h2>
+      <div id="tasklist"><div style="color:var(--sub);font-size:13px;padding:8px">暂无任务</div></div>
+      <div class="logstatus" id="logstatus" style="display:none">
+        <div class="ls-head">
+          <span class="ls-title" id="ls-title">任务</span>
+          <span class="ls-time"><span id="ls-elapsed">00:00</span> / <span id="ls-eta">--:--</span></span>
+          <span class="ls-pct" id="ls-pct">0%</span>
+        </div>
+        <div class="ls-bar"><div class="ls-fill" id="ls-fill"></div></div>
+      </div>
+      <div class="logbox" id="logbox" style="display:none"></div>
+    </div>
+  </div>
+
+  <!-- 文件与产物 -->
+  <div class="page" id="page-files">
+    <div class="card">
+      <h2>📁 项目文件</h2>
+      <div id="filelist"><div style="color:var(--sub);font-size:13px;padding:8px">加载中...</div></div>
+    </div>
+  </div>
+
+  <!-- 优选个股 -->
+  <div class="page" id="page-stockpick">
+    <div class="card">
+      <h2>🎯 回测优选个股</h2>
+      <p style="font-size:12px;color:var(--sub);margin-bottom:12px">基于多策略共振选股+盈利策略加权+综合评分，分A/B/C三级展示</p>
+      <iframe class="sp-frame" src="/stock_pick" id="stockpick-frame"></iframe>
+    </div>
+  </div>
+
+</div>
+
+<script>
+var $ = function(id){ return document.getElementById(id); };
+var CTRL = [
+  {name:'update_data', t:'更新行情数据', d:'下载全市场日线数据（约40分钟）', map:'全部页面 数据源', eta:2400},
+  {name:'backtest_v2', t:'跑回测v2', d:'28套策略回测+大盘趋势过滤+样本外分段', map:'收益看板 / 文件页 results_v2/', eta:900},
+  {name:'resonance', t:'多策略共振选股', d:'当日多策略共振选股', map:'优选个股数据', eta:300},
+  {name:'screen_filter', t:'二次筛选优选个股', d:'综合评分分A/B/C三级', map:'优选个股数据', eta:60},
+  {name:'gen_stock_pick', t:'刷新优选个股页面', d:'生成stock_pick.html', map:'★ 优选个股页签', eta:30},
+  {name:'daily_signal', t:'生成每日信号', d:'共振选股+信号报告', map:'文件页 daily_signal.md', eta:120},
+];
+var runningTasks = {};
+
+function api(url, opts){ return fetch(url, opts||{}).then(function(r){return r.json();}); }
+function toast(msg){ var t=document.createElement('div'); t.className='toast'; t.textContent=msg; document.body.appendChild(t); setTimeout(function(){t.remove();},3000); }
+
+document.querySelectorAll('.tab').forEach(function(tab){
+  tab.addEventListener('click', function(){
+    document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
+    document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
+    tab.classList.add('active');
+    $('page-'+tab.dataset.page).classList.add('active');
+    if(tab.dataset.page==='dashboard') loadDashboard();
+    if(tab.dataset.page==='files') loadFiles();
+    if(tab.dataset.page==='stockpick') $('stockpick-frame').src='/stock_pick?'+Date.now();
+  });
+});
+
+function updateClock(){ $('clock').textContent = new Date().toLocaleString('zh-CN'); }
+setInterval(updateClock, 1000); updateClock();
+
+function loadDashboard(){
+  api('/api/summary').then(function(r){
+    if(!r.ok){ $('kpi-grid').innerHTML='<div style="color:var(--sub);font-size:13px">'+r.msg+'</div>'; return; }
+    var data=r.data;
+    var profit=data.filter(function(d){return d.total_return>0;});
+    var avgReturn=data.length? data.reduce(function(s,d){return s+d.total_return;},0)/data.length : 0;
+    var best=data[0]||{};
+    var worst=data[data.length-1]||{};
+    $('kpi-grid').innerHTML =
+      kpi('策略总数', data.length, '') +
+      kpi('盈利策略', profit.length+'/'+data.length, profit.length>5?'up':'down') +
+      kpi('平均收益', avgReturn.toFixed(2)+'%', avgReturn>=0?'up':'down') +
+      kpi('最佳策略', (best.name||'-')+' '+(best.total_return||0).toFixed(2)+'%', 'up') +
+      kpi('最差策略', (worst.name||'-')+' '+(worst.total_return||0).toFixed(2)+'%', 'down') +
+      kpi('总交易数', data.reduce(function(s,d){return s+(d.trades||0);},0), '');
+    var tbody='';
+    data.forEach(function(d,i){
+      var p=d.periods||{};
+      tbody+='<tr><td>'+(i+1)+'</td><td><b>'+d.strategy+'</b></td><td>'+d.name+'</td>'+
+        '<td class="'+(d.total_return>=0?'up':'down')+'">'+d.total_return.toFixed(2)+'%</td>'+
+        '<td class="down">'+d.max_drawdown.toFixed(2)+'%</td>'+
+        '<td>'+d.win_rate.toFixed(1)+'%</td><td>'+d.trades+'</td>'+
+        '<td class="'+((p.Q1||0)>=0?'up':'down')+'">'+(p.Q1||0).toFixed(2)+'%</td>'+
+        '<td class="'+((p.Q2||0)>=0?'up':'down')+'">'+(p.Q2||0).toFixed(2)+'%</td>'+
+        '<td class="'+((p.Q3||0)>=0?'up':'down')+'">'+(p.Q3||0).toFixed(2)+'%</td></tr>';
+    });
+    $('rank-table').querySelector('tbody').innerHTML=tbody||'<tr><td colspan="10" style="text-align:center;color:var(--sub)">暂无数据</td></tr>';
+  });
+}
+function kpi(label,value,cls){ return '<div class="kpi"><div class="label">'+label+'</div><div class="value '+cls+'">'+value+'</div></div>'; }
+
+function buildControl(){
+  var g=$('ctrl-grid'); g.innerHTML='';
+  CTRL.forEach(function(c){
+    var el=document.createElement('div'); el.className='ctrl-card';
+    el.innerHTML='<div class="title">'+c.t+'</div><div class="desc">'+c.d+'</div><div class="map">↦ 映射：'+c.map+'</div><button class="btn">执行</button>';
+    el.querySelector('.btn').addEventListener('click', function(ev){
+      var b=ev.currentTarget; b.disabled=true; b.textContent='启动中…';
+      api('/api/run/'+c.name,{method:'POST'}).then(function(r){
+        if(!r.ok){ toast('启动失败: '+r.msg); b.disabled=false; b.textContent='执行'; return; }
+        b.textContent='运行中…'; runningTasks[r.task_id]=b;
+        toast('已启动 '+c.t+' (任务 '+r.task_id+')');
+        refreshTasks();
+        showLog(r.task_id, c.eta, c.t);
+      });
+    });
+    g.appendChild(el);
+  });
+}
+
+function refreshTasks(){
+  api('/api/tasks').then(function(r){
+    if(!r.ok||!r.tasks.length){ $('tasklist').innerHTML='<div style="color:var(--sub);font-size:13px;padding:8px">暂无任务</div>'; return; }
+    var html='';
+    r.tasks.forEach(function(t){
+      if(t.status==='done' && runningTasks[t.id]){ runningTasks[t.id].disabled=false; runningTasks[t.id].textContent='执行'; delete runningTasks[t.id]; }
+      html+='<div class="task-item"><span class="name">'+t.name+' ('+t.id+')</span><span class="st '+t.status+'">'+t.status+'</span><span style="font-size:11px;color:var(--sub)">'+t.start+'</span><button class="btn btn-sm" onclick="showLog(\''+t.id+'\','+t.eta+',\''+t.name+'\')">日志</button></div>';
+    });
+    $('tasklist').innerHTML=html;
+  });
+}
+setInterval(refreshTasks, 3000);
+
+function showLog(tid, eta, taskName){
+  var box=$('logbox'), status=$('logstatus');
+  var startTime=null, timerIv=null;
+  function fmtTime(sec){ sec=Math.floor(Math.max(0,sec)); var m=Math.floor(sec/60),s=sec%60; return (m<10?'0':'')+m+':'+(s<10?'0':'')+s; }
+  function updateElapsed(){ if(!startTime)return; var elapsed=(Date.now()-startTime)/1000; var el=$('ls-elapsed');if(el)el.textContent=fmtTime(elapsed); if(eta){var pct=Math.min(Math.round(elapsed/eta*100),99);var pp=$('ls-pct');if(pp)pp.textContent=pct+'%';var fl=$('ls-fill');if(fl)fl.style.width=pct+'%';} }
+  function render(r){
+    status.style.display='block'; box.style.display='block';
+    $('ls-title').textContent=(taskName||r.task.script)+' ('+tid+')';
+    if(eta){var ea=$('ls-eta');if(ea)ea.textContent=fmtTime(eta);}
+    if(r.task.start){ try{startTime=new Date(r.task.start.replace(' ','T')+'+08:00').getTime();}catch(e){startTime=Date.now();} if(!timerIv){timerIv=setInterval(updateElapsed,1000);updateElapsed();} }
+    var fl=$('ls-fill');
+    if(r.task.status==='done'){ $('ls-pct').textContent='100%'; fl.style.width='100%'; fl.className='ls-fill done'; if(timerIv){clearInterval(timerIv);timerIv=null;} }
+    else if(r.task.status==='failed'){ fl.className='ls-fill failed'; if(timerIv){clearInterval(timerIv);timerIv=null;} }
+    box.textContent='===== 任务 '+tid+' | '+r.task.script+' | '+r.task.status+' =====\n'+(r.log||'（无输出）');
+    box.scrollTop=box.scrollHeight;
+  }
+  api('/api/task/'+tid).then(function(r){
+    if(!r.ok){ toast('取日志失败'); return; }
+    render(r);
+    if(r.task.status==='running'){
+      var iv=setInterval(function(){ api('/api/task/'+tid).then(function(r2){ if(!r2.ok){clearInterval(iv);return;} render(r2); if(r2.task.status!=='running'){clearInterval(iv);toast('任务 '+tid+' '+r2.task.status);refreshTasks();} }); },2000);
+    }
+  });
+}
+
+function loadFiles(){
+  api('/api/files').then(function(r){
+    if(!r.ok){ $('filelist').innerHTML='<div style="color:var(--sub)">加载失败</div>'; return; }
+    var html='';
+    r.files.forEach(function(f){
+      var size=(f.size/1024).toFixed(1)+'KB';
+      if(f.size>1024*1024) size=(f.size/1024/1024).toFixed(1)+'MB';
+      html+='<div class="file-item"><span class="fname">'+f.name+'</span><span class="fsize">'+size+'</span><span class="fdir">'+f.dir+'</span></div>';
+    });
+    $('filelist').innerHTML=html||'<div style="color:var(--sub);font-size:13px;padding:8px">暂无文件</div>';
+  });
+}
+
+buildControl();
+loadDashboard();
+</script>
+</body>
+</html>
