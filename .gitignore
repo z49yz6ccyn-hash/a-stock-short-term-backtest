@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pkl
+.preview/
+backtest_data/daily.pkl
+backtest_data/results_v2/*_equity.csv
+*.log
+.env
+.DS_Store
