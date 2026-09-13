@@ -1,0 +1,28 @@
+{
+  "date": "2026-09-11",
+  "total_stocks": 276,
+  "strategies_used": ["S11","S20","S01","S26","S17","S21","S02","S19","S09","S14","S31"],
+  "top20": [
+    {"code": "sz.300183", "name": "东软载波", "close": 11.39, "pct_chg": 9.2, "resonance_count": 9, "strategies": ["S11","S01","S26","S21","S02","S19","S09","S14","S31"], "total_score": 99.57},
+    {"code": "sz.002848", "name": "高斯贝尔", "close": 15.24, "pct_chg": 10.04, "resonance_count": 7, "strategies": ["S11","S01","S21","S19","S09","S14","S31"], "total_score": 84.93},
+    {"code": "sh.600104", "name": "上汽集团", "close": 11.72, "pct_chg": 5.11, "resonance_count": 6, "strategies": ["S11","S01","S21","S19","S14","S31"], "total_score": 54.19},
+    {"code": "sz.300410", "name": "正业科技", "close": 8.65, "pct_chg": 6.79, "resonance_count": 6, "strategies": ["S11","S01","S19","S09","S14","S31"], "total_score": 53.9},
+    {"code": "sz.002296", "name": "辉煌科技", "close": 9.45, "pct_chg": 4.54, "resonance_count": 6, "strategies": ["S11","S01","S19","S09","S14","S31"], "total_score": 42.71},
+    {"code": "sz.300292", "name": "吴通控股", "close": 4.59, "pct_chg": 5.03, "resonance_count": 6, "strategies": ["S11","S01","S19","S09","S14","S31"], "total_score": 41.6},
+    {"code": "sz.000921", "name": "海信家电", "close": 29.12, "pct_chg": 3.41, "resonance_count": 7, "strategies": ["S11","S01","S17","S21","S19","S14","S31"], "total_score": 37.26},
+    {"code": "sz.002613", "name": "北玻股份", "close": 3.66, "pct_chg": 3.68, "resonance_count": 6, "strategies": ["S11","S01","S19","S09","S14","S31"], "total_score": 36.2},
+    {"code": "sz.300121", "name": "阳谷华泰", "close": 10.06, "pct_chg": 4.14, "resonance_count": 6, "strategies": ["S11","S01","S19","S09","S14","S31"], "total_score": 36.05},
+    {"code": "sh.601112", "name": "振石股份", "close": 16.11, "pct_chg": 3.4, "resonance_count": 6, "strategies": ["S11","S01","S19","S09","S14","S31"], "total_score": 33.63},
+    {"code": "sh.600818", "name": "ST中路", "close": 8.09, "pct_chg": 2.66, "resonance_count": 7, "strategies": ["S11","S01","S26","S21","S02","S14","S31"], "total_score": 29.53},
+    {"code": "sz.300237", "name": "ST美晨", "close": 2.48, "pct_chg": 4.64, "resonance_count": 4, "strategies": ["S01","S21","S19","S14"], "total_score": 23.36},
+    {"code": "sh.603105", "name": "芯能科技", "close": 8.61, "pct_chg": 2.74, "resonance_count": 4, "strategies": ["S11","S01","S21","S14"], "total_score": 20.26},
+    {"code": "sz.000056", "name": "*ST皇庭", "close": 2.6, "pct_chg": 2.36, "resonance_count": 4, "strategies": ["S11","S01","S21","S14"], "total_score": 15.33},
+    {"code": "sz.002913", "name": "奥士康", "close": 72.49, "pct_chg": 2.11, "resonance_count": 4, "strategies": ["S11","S01","S17","S21"], "total_score": 12.75},
+    {"code": "sh.688655", "name": "迅捷兴", "close": 60.12, "pct_chg": 6.75, "resonance_count": 2, "strategies": ["S11","S01"], "total_score": 18.84},
+    {"code": "sz.002856", "name": "*ST美芝", "close": 25.36, "pct_chg": 8.24, "resonance_count": 2, "strategies": ["S11","S01"], "total_score": 20.29},
+    {"code": "sz.301183", "name": "东田微", "close": 246.99, "pct_chg": 4.93, "resonance_count": 2, "strategies": ["S17","S14"], "total_score": 13.78},
+    {"code": "sh.600105", "name": "永鼎股份", "close": 42.2, "pct_chg": 4.51, "resonance_count": 2, "strategies": ["S19","S14"], "total_score": 12.17},
+    {"code": "sz.300427", "name": "红相股份", "close": 7.1, "pct_chg": 3.95, "resonance_count": 2, "strategies": ["S19","S14"], "total_score": 11.77}
+  ],
+  "note": "完整276只命中数据请运行 resonance_screen.py 重新生成"
+}
